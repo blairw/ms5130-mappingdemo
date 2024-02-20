@@ -1,0 +1,56 @@
+---
+title: "MS5130 Mapping File Demo"
+author: "Blair Wang"
+format:
+  html:
+    code-fold: true
+    embed-resources: true
+---
+
+# Mapping demo
+
+Adapted from [https://sl.bing.net/hFvb2K7KZaK](https://sl.bing.net/hFvb2K7KZaK)
+
+Firstly, let's try to plot the original dataset:
+
+```{r}
+library(readr)
+library(dplyr, warn.conflicts=FALSE)
+library(ggplot2)
+library(plotly, warn.conflicts=FALSE)
+
+# Import the data
+# Adapted from https://sl.bing.net/jPqB0uyR0mG
+main_df <- read_csv("01-data-inputs/ms5130_w07_sales_by_county.csv", col_types = cols(.default = "c", sales = "d"))
+mapping_df <- read_csv("01-data-inputs/ms5130_w07_county_mapping.csv", col_types = cols(.default = "c"))
+
+fig1 <- plot_ly(main_df, x = ~sales, color = ~county, type = "box", colors = c("red", "blue"))
+fig1
+```
+
+This is not very helpful, due to inconsistencies. To resolve the inconsistencies, we can perform **entity resolution** using a **mapping file**.
+
+The result:
+
+```{r}
+# Merge dataframes
+merged_df <- dplyr::left_join(main_df, mapping_df, by = "county")
+
+# Replace inconsistent county names
+merged_df$county <- ifelse(is.na(merged_df$mapped_county), merged_df$county, merged_df$mapped_county)
+
+# Clean up (remove mapped_county column if needed)
+cleaned_df <- merged_df[, c("shop_id", "county", "sales")]
+
+# Save cleaned dataframe to a new CSV file
+write.csv(cleaned_df, "02-data-outputs/cleaned_data.csv", row.names = FALSE)
+
+fig2 <- plot_ly(cleaned_df, x = ~sales, color = ~county, type = "box")
+fig2
+```
+
+Something to consider: _"Which county had the best sales figure?"_
+
+- Median?
+- Individually high-performing shop?
+- 'Long tail'?
