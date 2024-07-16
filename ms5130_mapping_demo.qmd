@@ -15,7 +15,7 @@ Firstly, let's try to plot the original dataset:
 
 ```{r}
 library(readr)
-library(dplyr, warn.conflicts=FALSE)
+library(dplyr, warn.conflicts=FALSE) # This is to suppress the warning message, please feel free to switch off `warn.conflicts=FALSE` if you would like to see what happens
 library(ggplot2)
 library(plotly, warn.conflicts=FALSE)
 
